@@ -4,7 +4,6 @@ on:
 jobs:
   insecure:
     runs-on: ubuntu-latest
-    # ❌ intentionally over-broad, triggers zizmor & OIDC checks
     permissions:
       id-token: write
       contents: write
@@ -12,19 +11,14 @@ jobs:
     steps:
       - name: Checkout (unpinned)
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
       - name: Setup Node (unpinned)
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-
-      - name: Broad OIDC token on PRs
+      - name: Broad OIDC token misuse
         run: |
-          echo "Requesting OIDC token (for demo only)"
-          echo "${{ secrets.GITHUB_TOKEN }}" | head -c 10
-
+          echo "Requesting OIDC token..."
+          curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}" -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" || true
       - name: Echo secrets into logs (bad)
         env:
           DUMMY_AWS_ACCESS_KEY_ID: ${{ secrets.DUMMY_AWS_ACCESS_KEY_ID }}
@@ -32,6 +26,5 @@ jobs:
         run: |
           echo "AWS AKID: $DUMMY_AWS_ACCESS_KEY_ID"
           echo "This is intentionally bad."
-
       - name: Lint shell
         run: bash scripts/bad.sh foo
