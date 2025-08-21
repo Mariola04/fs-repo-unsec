@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vuln-mini
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vuln-mini
+  template:
+    metadata:
+      labels:
+        app: vuln-mini
+    spec:
+      containers:
+        - name: app
+          image: ubuntu:16.04
+          securityContext:
+            privileged: true
+            allowPrivilegeEscalation: true
+          ports:
+            - containerPort: 22
+          imagePullPolicy: Always
+      hostNetwork: true

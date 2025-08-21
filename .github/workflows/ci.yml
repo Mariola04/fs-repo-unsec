@@ -1,0 +1,32 @@
+name: CI
+on:
+  pull_request_target: {}
+jobs:
+  insecure:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout (unpinned)
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup Node (unpinned)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Broad OIDC token on PRs
+        permissions:
+          id-token: write
+          contents: write
+        run: |
+          echo "Requesting OIDC token (for demo only)"
+          echo "${{ secrets.GITHUB_TOKEN }}" | head -c 10
+      - name: Echo secrets into logs (bad)
+        env:
+          DUMMY_AWS_ACCESS_KEY_ID: ${{ secrets.DUMMY_AWS_ACCESS_KEY_ID }}
+          DUMMY_AWS_SECRET_ACCESS_KEY: ${{ secrets.DUMMY_AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "AWS AKID: $DUMMY_AWS_ACCESS_KEY_ID"
+          echo "This is intentionally bad."
+      - name: Lint shell
+        run: bash scripts/bad.sh foo
